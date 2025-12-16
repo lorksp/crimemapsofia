@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sofia Crime Heatmap</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="logo-text">Crime<span class="accent">Map</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="#home" class="nav-link active" data-page="home">Home</a>
+            <a href="#map" class="nav-link" data-page="map">Map</a>
+            <a href="#data" class="nav-link" data-page="data">Data</a>
+            <a href="#about" class="nav-link" data-page="about">About</a>
+        </div>
+    </nav>
+    
+    <!-- Home Page -->
+    <div id="home-page" class="page-content" style="display: block;">
+        <div class="hero-section">
+            <div id="home-map-background"></div>
+            <div class="cinematic-overlay"></div>
+            <div id="home-map-background"></div>
+            <div class="cinematic-overlay"></div>
+            <div class="hero-content-center">
+                <h1>София <span class="gradient-text">Crime Map</span></h1>
+                <p class="hero-description">Интерактивна визуализация и анализ на престъпления в София по райони</p>
+                <div class="hero-buttons">
+                    <button class="cta-btn primary" onclick="navigateToPage('map')">Виж картата</button>
+                    <button class="cta-btn secondary" onclick="navigateToPage('data')">Разгледай данните</button>
+                </div>
+                
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <h3>Интерактивна карта</h3>
+                        <p>Визуализация на престъпленията по райони с възможност за филтриране по период и тип престъпление</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Статистика по райони</h3>
+                        <p>Подробни данни за всички 9 районни управления с разбивка по квартали и типове престъпления</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>За проекта</h3>
+                        <p>Информация за източника на данните, методологията и възможностите за бъдещо развитие</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Page -->
+    <div id="map-page" class="page-content" style="display: none;">
+        <div class="map-container-fullwidth">
+            <div id="map">
+                <button id="fullscreen-btn" class="fullscreen-btn" title="Fullscreen">
+                    <svg class="fullscreen-icon" viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                    </svg>
+                    <svg class="exit-fullscreen-icon" viewBox="0 0 24 24" width="20" height="20" style="display: none;">
+                        <path fill="currentColor" d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="controls-widget-floating">
+                <div class="widget-header">
+                    <h3>Филтри</h3>
+                    <button class="toggle-widget-btn" onclick="toggleWidget()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Период:</label>
+                    <div class="button-group">
+                        <button class="period-btn" data-period="all">Всички</button>
+                        <button class="period-btn active" data-period="2024">2024 г.</button>
+                        <button class="period-btn" data-period="2025">2025 г. (Ян-Окт)</button>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Тип престъпление:</label>
+                    <div class="button-group vertical">
+                        <button class="filter-btn active" data-type="all">Всички типове</button>
+                        <button class="filter-btn" data-type="type1">Престъпления против собствеността</button>
+                        <button class="filter-btn" data-type="type2">Престъпления против личността</button>
+                        <button class="filter-btn" data-type="type3">Престъпления с наркотици</button>
+                        <button class="filter-btn" data-type="type4">ПТП с ранени и загинали</button>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div>
+                            <span class="stat-label">Период</span>
+                            <span class="stat-value" id="active-period">2024 г.</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <span class="stat-label">Общ брой</span>
+                            <span class="stat-value" id="total-incidents">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <span class="stat-label">Филтър</span>
+                            <span class="stat-value" id="active-filter">Всички</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Data Page -->
+    <div id="data-page" class="page-content" style="display: none;">
+        <div class="data-section">
+            <h1>Статистика на престъпленията</h1>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>01 РУ-СДВР</h3>
+                    <div class="data-details" id="district-1-data"></div>
+                </div>
+                <div class="data-card">
+                    <h3>02 РУ-СДВР</h3>
+                    <div class="data-details" id="district-2-data"></div>
+                </div>
+                <div class="data-card">
+                    <h3>03 РУ-СДВР</h3>
+                    <div class="data-details" id="district-3-data"></div>
+                </div>
+                <div class="data-card">
+                    <h3>04 РУ-СДВР</h3>
+                    <div class="data-details" id="district-4-data"></div>
+                </div>
+                <div class="data-card">
+                    <h3>05 РУ-СДВР</h3>
+                    <div class="data-details" id="district-5-data"></div>
+                </div>
+                <div class="data-card">
+                    <h3>06 РУ-СДВР</h3>
+                    <div class="data-details" id="district-6-data"></div>
+                </div>
+                <div class="data-card">
+                    <h3>07 РУ-СДВР</h3>
+                    <div class="data-details" id="district-7-data"></div>
+                </div>
+                <div class="data-card">
+                    <h3>08 РУ-СДВР</h3>
+                    <div class="data-details" id="district-8-data"></div>
+                </div>
+                <div class="data-card">
+                    <h3>09 РУ-СДВР</h3>
+                    <div class="data-details" id="district-9-data"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- About Page -->
+    <div id="about-page" class="page-content" style="display: none;">
+        <div class="about-section">
+            <div id="about-map-background"></div>
+            <div class="cinematic-overlay"></div>
+            <h1>За проекта</h1>
+            <div class="about-content">
+                <div class="about-card">
+                    <h2>Цел</h2>
+                    <p>Този сайт е създаден с цел да представи информация за нивата на престъпност чрез интерактивна карта. Идеята е данните да бъдат показани по ясен и достъпен начин, който улеснява разбирането и сравнението между различните райони.</p>
+                    <p>Сайтът има за цел да повиши информираността по темата за престъпността и да покаже как визуализацията на данни може да помогне за по-добър анализ и ориентиране. Проектът е разработен с образователна цел и демонстрира как чрез дигитални инструменти може да се представя обществено значима информация.</p>
+                </div>
+                
+                <div class="about-card">
+                    <h2>Данни</h2>
+                    <p>Данните за този проект са предоставени от Министерството на вътрешните работи (МВР) след подадено електронно запитване чрез платформа за обществена информация. Информацията е получена по райони (РУ) и разделена в четири основни категории престъпност:</p>
+                    <ul>
+                        <li><strong>Престъпления против личността</strong> – включват убийство, телесна повреда, злепоставяне, отвличане, принуда, издаване на чужда тайна, клевета, изнасилване, блудство и трафик на хора.</li>
+                        <li><strong>Престъпления против собствеността</strong> – кражба, грабеж, присвояване, измама, изнудване, вещно укривателство, унищожаване и повреждане на собственост, както и злоупотреба с доверие.</li>
+                        <li><strong>Престъпления, свързани с наркотични вещества</strong> – незаконно производство, разпространение, притежание и употреба на наркотични вещества.</li>
+                        <li><strong>Тежки пътно-транспортни произшествия с ранени и загинали</strong> – пътни инциденти с тежки последици и пострадали лица.</li>
+                    </ul>
+                    <p style="margin-top: 24px;">Обработените данни са визуализирани чрез интерактивна карта, която позволява лесно сравнение между различните райони и по-добро разбиране на нивата на престъпност.</p>
+                    <p>Районите, използвани в картата, са измерени и очертани спрямо териториалния обхват на районните управления (РУ), за които се отнасят предоставените данни. Границите са създадени чрез ръчно чертане и съобразяване с зоните, обслужвани от съответните РУ, за да се осигури максимално точно съвпадение между статистическите данни и визуализираните райони на картата.</p>
+                </div>
+                
+                <div class="about-card">
+                    <h2>Бъдещо развитие</h2>
+                    <p>Този проект е създаден като основа за визуализация на данни за престъпността в София. При наличие на интерес от страна на потребителите, картата може да бъде допълнително развита с повече подробности, функционалности и актуализирани данни.</p>
+                    <p>Вашата обратна връзка е ценна за подобряването и разширяването на проекта в бъдеще.</p>
+                </div>
+                
+                <div class="about-card">
+                    <h2>Контакт</h2>
+                    <p>За въпроси, предложения или обратна връзка, може да се свържете с нас:</p>
+                    <p style="margin-top: 16px;"><strong>Email:</strong> <a href="mailto:crimemapsofia@yahoo.com" style="color: #a855f7; text-decoration: none;">crimemapsofia@yahoo.com</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="data.js"></script>
+    <script src="navigation.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
